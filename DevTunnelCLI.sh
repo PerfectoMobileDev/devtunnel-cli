@@ -17,6 +17,7 @@ OpenSessioncapabilities=$(cat <<EOF
 {
   "desiredCapabilities": {
     "securityToken": "$token",
+    "enableAppiumBehavior": "true",
     "deviceName": "$deviceId"
   }
 }
