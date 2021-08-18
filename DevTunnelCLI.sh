@@ -144,7 +144,7 @@ SessionStartPostResponse=$(curl -s --header "Content-Type: application/json" --r
 checkForErrors "$SessionStartPostResponse"
 
 
-ID=$(echo "$SessionStartPostResponse"| sed -e 's/.*sessionId":"\(.*\)","value".*/\1/')
+ID=$(echo "$SessionStartPostResponse"| sed -e 's/.*sessionId":"\([^"]*\).*/\1/')
 
 printf "%s\n" "$ID" >> lastSessionID.txt
 
@@ -153,9 +153,12 @@ connectDevtunnelPostResponse=$(curl -s --header "Content-Type: application/json"
 
 checkForErrorsAndCleanup "$connectDevtunnelPostResponse"
 
-Value=$(echo "$connectDevtunnelPostResponse"| sed -e 's/.*value":"\(.*\)","status".*/\1/')
-#echo "$Value"
+Value=$(echo "$connectDevtunnelPostResponse"| sed -e 's/.*value":"\([^"]*\).*/\1/')
+
+
 printf "%s\n" "${grn}opening devtunnel application${end}"
+
+
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         "$Value"
