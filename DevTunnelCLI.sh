@@ -161,7 +161,7 @@ printf "%s\n" "${grn}opening devtunnel application${end}"
 
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        "$Value"
+        xdg-open "$Value"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
         connectMac
 elif [[ "$OSTYPE" == "cygwin" ]]; then
