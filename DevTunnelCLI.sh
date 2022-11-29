@@ -1,6 +1,4 @@
 #!/bin/bash
-
-
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 end=$'\e[0m'
@@ -19,6 +17,8 @@ OpenSessioncapabilities=$(cat <<EOF
     "securityToken": "$token",
     "enableAppiumBehavior": "true",
     "deviceName": "$deviceId"
+
+
   }
 }
 EOF
@@ -112,14 +112,14 @@ checkForErrorsAndCleanup(){
 
 connectMac(){
   ERRORSUBSTRING='LSOpenURLsWithRole'
-  RES=$(open "$Value" 2>&1)
+  RES=$(sudo open "$Value" 2>&1)
   i="0"
   while [[ "$RES" == *"$ERRORSUBSTRING"* && $i -lt 10 ]]
   do
     i=$((i+1))
     echo "failed to open url, retrying."
     sleep 2
-    RES=$(open "$Value" 2>&1)
+    RES=$(sudo open "$Value" 2>&1)
   done
 }
 
