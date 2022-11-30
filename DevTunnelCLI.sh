@@ -112,14 +112,14 @@ checkForErrorsAndCleanup(){
 
 connectMac(){
   ERRORSUBSTRING='LSOpenURLsWithRole'
-  RES=$(sudo open "$Value" 2>&1)
+  RES=$(open "$Value" 2>&1)
   i="0"
   while [[ "$RES" == *"$ERRORSUBSTRING"* && $i -lt 10 ]]
   do
     i=$((i+1))
     echo "failed to open url, retrying."
     sleep 2
-    RES=$(sudo open "$Value" 2>&1)
+    RES=$(open "$Value" 2>&1)
   done
 }
 
