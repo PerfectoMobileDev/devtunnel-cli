@@ -1,4 +1,6 @@
 #!/bin/bash
+
+
 red=$'\e[1;31m'
 grn=$'\e[1;32m'
 end=$'\e[0m'
@@ -17,8 +19,6 @@ OpenSessioncapabilities=$(cat <<EOF
     "securityToken": "$token",
     "enableAppiumBehavior": "true",
     "deviceName": "$deviceId"
-
-
   }
 }
 EOF
@@ -153,6 +153,17 @@ connectDevtunnelPostResponse=$(curl -s --header "Content-Type: application/json"
 
 checkForErrorsAndCleanup "$connectDevtunnelPostResponse"
 
+checkIfDeviceIsIOS() {
+  decoded=$(echo $value | base64 -d)
+  modified=$decoded
+  decodedValueDb=$(echo "$decoded" | jq -r '.db')
+  decodedValueDa=$(echo "$decoded" | jq -r '.da')
+  if [ "$decodedValueDa" != "null" -a ${#decodedValueDb} -le 15 ]; then
+    modified=$(echo "$decoded"| sed -e 's/\"d\":\"0\"/\"d\":\"1\"/')
+  fi
+  encoded=$(echo $modified | base64)
+}
+
 Value=$(echo "$connectDevtunnelPostResponse"| sed -e 's/.*value":"\([^"]*\).*/\1/')
 
 
@@ -161,7 +172,29 @@ printf "%s\n" "${grn}opening devtunnel application${end}"
 
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        xdg-open "$Value"
+        if xhost >& /dev/null ; then
+           "$Value"
+        else
+            value=$(echo "$connectDevtunnelPostResponse" | jq '.value' | sed -e 's/.*\?d=\(.*\)"/\1/')
+
+            checkIfDeviceIsIOS
+
+            perfectoDevTunnel='/usr/local/etc/stunnel/PerfectoDevTunnel.jar'
+
+            output=$(java -Djdk.http.auth.tunneling.disabledSchemes=\"\" -jar $perfectoDevTunnel "$encoded" 2>&1)
+
+            printf "%s\n" "${output}"
+
+            errors=$(echo "$output" | tail -n1 | grep Error | grep -v handshake | grep -v proxy)
+
+            if [ -z "$errors" ]; then
+              printf "%s\n" "${grn} ${end}"
+            else
+              printf "%s\n" "${red}Can not establish connection${end}"
+              printf "%s\n" "${red}[ERROR]${errors}${end}"
+              cleanup
+            fi
+          fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
         connectMac
 elif [[ "$OSTYPE" == "cygwin" ]]; then
@@ -181,5 +214,4 @@ do
   keepAlivePostResponse=$(curl -s --header "Content-Type: application/json" --request POST --data "$KeepAliveCapabilities" "https://$domain.perfectomobile.com/nexperience/perfectomobile/wd/hub/session/$ID/execute")
   _stopnow
 done
-
 
