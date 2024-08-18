@@ -18,6 +18,7 @@ OpenSessioncapabilities=$(cat <<EOF
   "desiredCapabilities": {
     "securityToken": "$token",
     "enableAppiumBehavior": "true",
+    "automationName": "PerfectoMobile",
     "deviceName": "$deviceId"
   }
 }
