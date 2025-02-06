@@ -8,19 +8,30 @@ perfectoDevTunnel='/usr/local/etc/stunnel/PerfectoDevTunnel.jar'
 jsonFile="account.json"
 domain="king"
 liveViewUrl="https://king.app.perfectomobile.com/executions"
+VALID_OS=("mac" "windows" "linux")
 
 Help() {
   echo "This script opens a session in Perfecto for a specific device, starts the DevTunnel for that session and keeps alive the DevTunnel connection until closed."
   echo "After running the script, it will be left opened, and by canceling the process (Ctrl-C) it will close the connection from Perfecto."
   echo
-  echo "Syntax: ./DevTunnel.sh -d <deviceId> -o <deviceOS> [-dm <domain>] [-s <sessionId>]"
+  echo "Syntax: ./DevTunnel.sh -d <deviceId> -o <clientOS> [-dm <domain>] [-s <sessionId>]"
   echo
   echo "Options:"
   echo "    -d | --device-id      Device id"
-  echo "    -o | --device-os      Device OS"
+  echo "    -o | --client-os      The OS of the client initiating the request (mac, windows, linux)"
   echo "    -dm | --domain        [OPT] Perfecto's domain (default: 'king')"
   echo "    -s | --session-id     [OPT] Session id, sent only if wanting to delete the session"
   echo
+}
+
+is_valid_os() {
+    local os_to_check="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    for os in "${VALID_OS[@]}"; do
+        if [ "$os" == "$os_to_check" ]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 if [ ! -f "$jsonFile" ]; then
@@ -52,9 +63,9 @@ while [ "$1" != "" ]; do
     shift
     deviceId=$1
     ;;
-  -o | --device-os)
+  -o | --client-os)
     shift
-    deviceOS=$1
+    clientOS=$1
     ;;
   -dm | --domain)
     shift
@@ -78,8 +89,11 @@ if [ -z "$deviceId" ]; then
   printf "%s\n\n" "${red}[ERROR] Device id is a required parameter.${end}"
   Help && exit 1
 fi
-if [ -z "deviceOS" ]; then
-  printf "%s\n\n" "${red}[ERROR] Device OS is a required parameter.${end}"
+if [ -z "$clientOS" ]; then
+  printf "%s\n\n" "${red}[ERROR] Client OS is a required parameter.${end}"
+  Help && exit 1
+elif ! is_valid_os "$clientOS" ; then
+  printf "%s\n\n" "${red}[ERROR] Client OS is not valid. Allowed values: mac, windows, linux.${end}"
   Help && exit 1
 fi
 if [ -z "$OSTYPE" ]; then
@@ -105,7 +119,7 @@ ConnectDevTunnelCapabilities=$(cat <<EOF
   "args": [
     {
       "action": "start",
-      "os": "$deviceOS"
+      "os": "$clientOS"
     }
   ]
 }
