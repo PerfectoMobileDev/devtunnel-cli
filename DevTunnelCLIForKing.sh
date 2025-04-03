@@ -215,7 +215,7 @@ checkIfDeviceIsIOS() {
   modified=$decoded
   decodedValueDb=$(echo "$decoded" | jq -r '.db')
   decodedValueDa=$(echo "$decoded" | jq -r '.da')
-  if [ "$decodedValueDa" != "null" ] && [ ${#decodedValueDb} -le 15 ]; then
+  if [ "$decodedValueDa" != "null" ] && [ ${#decodedValueDb} -lt 15 ]; then
     modified=$(echo "$decoded" | sed -e 's/\"d\":\"0\"/\"d\":\"1\"/')
   fi
   value=$(echo "$modified" | base64)
